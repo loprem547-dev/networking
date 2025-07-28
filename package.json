@@ -5,12 +5,14 @@
   "main": "server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon server.js",
+    "dev": "nodemon backend/server.js",
     "build": "echo 'No build step required'"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "express": "^4.21.2",
+    "mysql": "^2.18.1",
     "mysql2": "^3.14.2"
   },
   "devDependencies": {
