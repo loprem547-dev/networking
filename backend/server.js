@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./database');
-const path = require('path'); // Added for serving static files
-const fs = require('fs'); // Added for reading directory
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -238,9 +238,7 @@ app.post('/api/login', async (req, res) => {
         const user = await db.checkUser(username, password);
         
         if (user) {
-            // ไม่ส่งรหัสผ่านกลับ
             delete user.password;
-            // Map display_name เป็น displayName
             user.displayName = user.display_name;
             res.json({ success: true, user });
         } else {
@@ -293,11 +291,3 @@ app.listen(PORT, () => {
     console.log(`📡 API พร้อมใช้งานที่ http://localhost:${PORT}`);
     console.log(`🔗 ตรวจสถานะ: http://localhost:${PORT}/api/health`);
 });
-const connection = require('./database');  // นำ connection มาใช้
-
-// ตัวอย่างการใช้งาน query
-connection.query('SELECT NOW() AS currentTime', (err, results) => {
-  if (err) throw err;
-  console.log('เวลาปัจจุบันจากฐานข้อมูล:', results[0].currentTime);
-});
-
