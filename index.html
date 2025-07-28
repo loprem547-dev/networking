@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อนักเรียน</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="slideshow"></div>
+    <div class="background-slideshow"></div>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <img id="loginLogo" src="logo.png" alt="โลโก้" style="width:240px;display:block;margin: auto 20px auto;">
+            <h1>ระบบเช็คชื่อนักเรียน</h1>
+            <h2>เข้าสู่ระบบ</h2>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้:</label>
+                    <input type="text" id="username" required placeholder="กรอกชื่อผู้ใช้">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">รหัสผ่าน:</label>
+                    <input type="password" id="password" required placeholder="กรอกรหัสผ่าน">
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    🔓 เข้าสู่ระบบ
+                </button>
+                
+                <div class="login-error" id="loginError"></div>
+            </form>
+            
+            <div class="login-footer">
+                <p>ติดต่อผู้ดูแลระบบ: commu@rtaf.mi.th</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="container" style="display: none;">
+        <div class="header-bar">
+            <h1 style="display:flex;align-items:center;gap:10px;">
+                <img src="logo.png" alt="โลโก้" style="height:64px;vertical-align:middle;"> ระบบเช็คชื่อนักเรียน
+            </h1>
+            <div class="user-info">
+                <img id="userProfilePicSmall" src="" alt="โปรไฟล์" style="height:32px;width:32px;border-radius:50%;border:1px solid #ccc;object-fit:cover;display:none;margin-right:8px;vertical-align:middle;cursor:pointer;" onclick="openUserSettings()">
+                <span id="userDisplay" style="cursor:pointer;text-decoration:underline;vertical-align:middle;" onclick="openUserSettings()"></span>
+                <button onclick="logout()" class="logout-btn">ออกจากระบบ</button>
+            </div>
+        </div>
+        
+        <div class="alert success" id="successAlert"></div>
+        <div class="alert error" id="errorAlert"></div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('setup')">⚙️ ตั้งค่า</button>
+            <button class="tab" onclick="switchTab('attendance')">✅ เช็คชื่อ</button>
+        </div>
+
+        <!-- Setup Tab -->
+        <div id="setup" class="tab-content active">
+            <div class="section">
+                <h2>⚙️ ตั้งค่าตอนเรียน</h2>
+                
+                <div class="form-group">
+                    <label for="yearLevel">เลือกชั้นปี:</label>
+                    <select id="yearLevel" onchange="updateClassOptions()">
+                        <option value="">-- เลือกชั้นปี --</option>
+                        <option value="1">ชั้นปีที่ 1</option>
+                        <option value="2">ชั้นปีที่ 2</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="classSelect">เลือกตอนเรียน:</label>
+                    <select id="classSelect" onchange="loadStudents()" disabled>
+                        <option value="">-- เลือกชั้นปีก่อน --</option>
+                    </select>
+                </div>
+                
+                
+                <div class="form-group">
+                    <label for="teacherName">ชื่อครูผู้เช็คชื่อ:</label>
+                    <input type="text" id="teacherName" placeholder="กรอกชื่อครูผู้เช็กชื่อ">
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeSlot">ช่วงเวลา:</label>
+                    <select id="timeSlot">
+                        <option value="">-- เลือกช่วงเวลา --</option>
+                        <option value="morning">🌅 ภาคเช้า (08:00 - 12:00)</option>
+                        <option value="afternoon">☀️ ภาคบ่าย (13:00 - 16:00)</option>
+                    </select>
+                    <button onclick="showTimeSlotManagement()" class="admin-only" style="background: #4285f4; margin-top: 5px;">
+                        ⚙️ จัดการช่วงเวลา (Admin)
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <button onclick="showBackgroundManagement()" class="admin-only" style="background: #9c27b0; margin-top: 5px;">
+                        🖼️ จัดการภาพพื้นหลัง (Admin)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content">
+            <div class="section">
+                <h2>✅ เช็กชื่อประจำวัน</h2>
+                <p>วันที่: <strong id="currentDate"></strong></p>
+                <p>ชั้นปี: <strong id="currentYear">-</strong></p>
+                <p>ตอนเรียน: <strong id="currentClass">-</strong></p>
+                <p>ครูผู้สอน: <strong id="currentTeacher">-</strong></p>
+                <p>ช่วงเวลา: <strong id="currentTimeSlot">-</strong></p>
+                
+                <div class="summary">
+                    <div class="summary-card" style="border-left: 4px solid #28a745;">
+                        <div class="summary-number" id="presentCount">0</div>
+                        <div>มาเรียน</div>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #dc3545;">
+                        <div class="summary-number" id="absentCount">0</div>
+                        <div>ขาดเรียน</div>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #ffc107;">
+                        <div class="summary-number" id="sickCount">0</div>
+                        <div>ลาป่วย</div>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #17a2b8;">
+                        <div class="summary-number" id="activityCount">0</div>
+                        <div>ไปกิจกรรม</div>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #6c757d;">
+                        <div class="summary-number" id="homeCount">0</div>
+                        <div>ลากลับบ้าน</div>
+                    </div>
+                </div>
+
+                <div class="attendance-grid" id="attendanceGrid">
+                    <!-- Student cards will be dynamically added here -->
+                </div>
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="exportAttendanceToExcel()" style="padding: 15px 40px; font-size: 18px;">
+                        📊 ส่งออก Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Tab -->
+        <div id="report" class="tab-content">
+            <div class="section">
+                <h2>📊 รายงานการเช็กชื่อ</h2>
+                <div class="form-group">
+                    <label for="reportDate">เลือกวันที่:</label>
+                    <input type="date" id="reportDate" onchange="loadReport()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="exportClassroom">ชั้นปี/ตอน:</label>
+                    <select id="exportClassroom" onchange="loadReport()">
+                        <option value="">-- เลือกชั้นปี/ตอน --</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exportTimeSlot">คาบเรียน:</label>
+                    <select id="exportTimeSlot" onchange="loadReport()">
+                        <option value="">-- เลือกคาบเรียน --</option>
+                    </select>
+                </div>
+                
+                <div id="exportSection" style="margin: 20px 0; text-align: center;">
+                    <!-- ปุ่มส่งออกจะถูกเพิ่มที่นี่ -->
+                </div>
+                
+                <div style="margin: 20px 0; text-align: center;">
+                    <button onclick="clearAllAttendanceHistory()" class="btn-clear-history">
+                        🗑️ ล้างประวัติการเช็คชื่อทั้งหมด
+                    </button>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลดข้อมูล...</p>
+                </div>
+
+                <table class="attendance-table" id="reportTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>รหัสนักเรียน</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>สถานะ</th>
+                            <th>ช่วงเวลา</th>
+                            <th>วันที่บันทึก</th>
+                            <th>การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody">
+                        <!-- Report rows will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Statistics Tab -->
+        <div id="statistics" class="tab-content">
+            <div class="section">
+                <h2>📈 สถิติการเข้าเรียน</h2>
+                
+               <div class="form-group">
+                    <label for="statsClassroom">เลือกชั้นปี/ตอน:</label>
+                    <select id="statsClassroom" onchange="loadStudentStatistics()">
+                        <option value="">-- เลือกชั้นปี/ตอน --</option>     
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="statsDateRange">ช่วงวันที่:</label>
+                    <input type="date" id="statsStartDate" onchange="loadStudentStatistics()">
+                    <span>ถึง</span>
+                    <input type="date" id="statsEndDate" onchange="loadStudentStatistics()">
+                </div>
+                
+                <div style="margin: 20px 0; text-align: center;">
+                    <button onclick="exportStatisticsToExcel()" class="btn-export-all">
+                        📊 ส่งออกสถิติเป็น Excel
+                    </button>
+                </div>
+                
+                <div class="loading" id="statsLoading">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลดสถิติ...</p>
+                </div>
+
+                <table class="attendance-table" id="statsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>รหัสนักเรียน</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>มาเรียน</th>
+                            <th>ขาดเรียน</th>
+                            <th>ลาป่วย</th>
+                            <th>ไปกิจกรรม</th>
+                            <th>ลากลับบ้าน</th>
+                            <th>อัตราการมาเรียน (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsBody">
+                        <!-- Statistics rows will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Help Modal -->
+    <div id="importHelpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 วิธีตั้งค่า Google Sheets สำหรับนำเข้าข้อมูล</h2>
+                <span class="close" onclick="closeModal('importHelpModal')">&times;</span>
+            </div>
+            
+            <div class="help-section">
+                <h3>📋 1. เตรียม Google Sheets</h3>
+                <p>สร้าง Google Sheets ใหม่หรือใช้ที่มีอยู่แล้ว โดยจัดรูปแบบข้อมูลดังนี้:</p>
+                <div class="code-block">
+                    คอลัมน์ A: รหัสนักเรียน
+                    คอลัมน์ B: ชื่อ-นามสกุล  
+                    คอลัมน์ C: ตอนเรียน (y1-com-sec-1, y1-com-sec-2, y2-com-sec-1, ฯลฯ)
+                </div>
+                <p>ตัวอย่าง:</p>
+                <table class="preview-table">
+                    <tr>
+                        <th>A</th>
+                        <th>B</th>
+                        <th>C</th>
+                    </tr>
+                    <tr>
+                        <td>12345</td>
+                        <td>สมชาย ใจดี</td>
+                        <td>y1-com-sec-1</td>
+                    </tr>
+                    <tr>
+                        <td>12346</td>
+                        <td>สมหญิง รักเรียน</td>
+                        <td>y2-com-sec-1</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="help-section">
+                <h3>🔗 2. หา Spreadsheet ID</h3>
+                <p>เปิด Google Sheets แล้วดู URL จะเจอ ID อยู่ตรงกลาง:</p>
+                <div class="code-block">
+                    https://docs.google.com/spreadsheets/d/<span style="color: #d73a49; font-weight: bold;">1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms</span>/edit
+                </div>
+                <p>ส่วนที่เป็นสีแดงคือ Spreadsheet ID</p>
+            </div>
+
+            <div class="help-section">
+                <h3>🔓 3. ตั้งค่าการแชร์</h3>
+                <p>คลิกปุ่ม "แชร์" ที่มุมขวาบน แล้วเลือก:</p>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li>เปลี่ยนเป็น "ทุกคนที่มีลิงก์"</li>
+                    <li>สิทธิ์: "ผู้ดู" (Viewer)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Preview Modal -->
+    <div id="importPreviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📥 ตรวจสอบข้อมูลก่อนนำเข้า</h2>
+                <span class="close" onclick="closeModal('importPreviewModal')">&times;</span>
+            </div>
+            
+            <div id="importPreviewContent" class="import-preview">
+                <!-- Preview content will be inserted here -->
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="confirmImport()" style="background: #28a745;">
+                    ✅ ยืนยันการนำเข้า
+                </button>
+                <button onclick="closeModal('importPreviewModal')" style="background: #6c757d;">
+                    ❌ ยกเลิก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Slot Management Modal -->
+    <div id="timeSlotModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⏰ จัดการช่วงเวลา</h2>
+                <span class="close" onclick="closeTimeSlotModal()">&times;</span>
+            </div>
+            
+            <div id="timeSlotContent" class="time-slot-content">
+                <!-- Time slot management content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Management Modal -->
+    <div id="backgroundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🖼️ จัดการภาพพื้นหลัง</h2>
+                <span class="close" onclick="closeBackgroundModal()">&times;</span>
+            </div>
+            
+            <div id="backgroundContent" class="background-content">
+                <!-- Background management content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ตั้งค่าส่วนตัว -->
+    <div id="userSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ตั้งค่าส่วนตัว</h2>
+                <span class="close" onclick="closeUserSettings()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="userProfileName">ชื่อที่แสดง:</label>
+                <input type="text" id="userProfileName" value="" placeholder="ชื่อที่แสดง">
+            </div>
+            <div class="form-group">
+                <label for="userProfilePicInput">รูปโปรไฟล์:</label>
+                <input type="file" id="userProfilePicInput" accept="image/*">
+                <div style="margin-top:10px;">
+                    <img id="userProfilePicPreview" src="" alt="โปรไฟล์" style="display:none;max-width:120px;max-height:120px;border-radius:50%;border:1px solid #ccc;">
+                </div>
+            </div>
+            <div style="margin-top:20px;text-align:right;">
+                <button onclick="saveUserSettings()" style="padding:8px 24px;">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+      <script>
+const images = [
+  './backend/backgrounds/backgrounds (1).jpg',
+  './backend/backgrounds/backgrounds (2).jpg',
+  './backend/backgrounds/backgrounds (3).jpg',
+  './backend/backgrounds/backgrounds (4).jpg',
+    './backend/backgrounds/backgrounds (5).jpg',
+    './backend/backgrounds/backgrounds (6).jpg',
+    './backend/backgrounds/backgrounds (7).jpg',
+    './backend/backgrounds/backgrounds (8).jpg',
+];
+let current = 0;
+const bgDiv = document.querySelector('.background-slideshow');
+function showImage(idx) {
+  bgDiv.style.backgroundImage = `url('${images[idx]}')`;
+  bgDiv.style.backgroundColor = '#e0e0e0'; // fallback color
+}
+function nextImage() {
+  current = (current + 1) % images.length;
+  showImage(current);
+}
+showImage(current);
+setInterval(nextImage, 4000);
+</script>
+      
+</body>
+</html>

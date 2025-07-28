@@ -1,0 +1,15 @@
+const connection = mysql.createConnection({
+    host: 'localhost',           // หรือ IP address ของ MySQL Server
+    user: 'root',               // username ของ MySQL
+    password: 'atts',               // password ของ MySQL (ถ้ามี)
+    database: 'student_db', // ชื่อฐานข้อมูล
+    port: 3306                  // port ของ MySQL (ปกติ 3306)
+});
+
+const connection = mysql.createConnection({
+    host: 'localhost',           // หรือ IP address ของ MySQL Server
+    user: 'appuser',               // username ของ MySQL
+    password: 'atts67',               // password ของ MySQL (ถ้ามี)
+    database: 'student_db', // ชื่อฐานข้อมูล
+    port: 3306                  // port ของ MySQL (ปกติ 3306)
+});
