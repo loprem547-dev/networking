@@ -293,7 +293,7 @@ app.listen(PORT, () => {
     console.log(`📡 API พร้อมใช้งานที่ http://localhost:${PORT}`);
     console.log(`🔗 ตรวจสถานะ: http://localhost:${PORT}/api/health`);
 });
-const connection = require('./data');  // นำ connection มาใช้
+const connection = require('./database');  // นำ connection มาใช้
 
 // ตัวอย่างการใช้งาน query
 connection.query('SELECT NOW() AS currentTime', (err, results) => {
