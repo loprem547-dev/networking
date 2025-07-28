@@ -110,7 +110,7 @@ async function handleLogin(event) {
     const password = document.getElementById('password').value;
     
     try {
-        const response = await fetch('http://localhost:3001/api/login', {
+        const response = await fetch('https://web-production-9c35d.up.railway.app/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
