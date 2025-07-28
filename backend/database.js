@@ -13,6 +13,18 @@ const pool = mysql.createPool({
     queueLimit: 0
 }).promise();
 
+// ฟังก์ชันทดสอบเชื่อมต่อฐานข้อมูล
+async function connectDatabase() {
+    try {
+        const connection = await pool.getConnection();
+        connection.release();
+        console.log('✅ เชื่อมต่อฐานข้อมูล MySQL สำเร็จ!');
+    } catch (error) {
+        console.error('❌ เชื่อมต่อฐานข้อมูล MySQL ไม่สำเร็จ:', error.message);
+        throw error;
+    }
+}
+
 // ฟังก์ชันดึงข้อมูลนักเรียนทั้งหมด
 async function getAllStudents() {
     const [rows] = await pool.query('SELECT * FROM students ORDER BY student_id');
@@ -57,10 +69,10 @@ async function getUsers() {
 }
 
 // ฟังก์ชันเพิ่มข้อมูลการเข้าเรียน
-async function addAttendance(studentId, date, timeSlot, status) {
+async function addAttendance(studentId, date, timeSlot, status, createdBy = 'admin') {
     const [result] = await pool.query(
-        'INSERT INTO attendance (student_id, date, time_slot, status) VALUES (?, ?, ?, ?)',
-        [studentId, date, timeSlot, status]
+        'INSERT INTO attendance (student_id, date, time_slot, status, created_by) VALUES (?, ?, ?, ?, ?)',
+        [studentId, date, timeSlot, status, createdBy]
     );
     return result;
 }
@@ -140,7 +152,84 @@ async function getAttendanceStatistics(classroom, startDate, endDate) {
     return rows;
 }
 
+// -- ฟังก์ชันเพิ่มเติมตามที่ขอ --
+
+// ดึงข้อมูลชั้นเรียนทั้งหมด
+async function getClassrooms() {
+    const [rows] = await pool.query('SELECT * FROM classrooms ORDER BY classroom_name');
+    return rows;
+}
+
+// ดึงข้อมูลการเข้าเรียนตามวันที่, ช่วงเวลา และห้องเรียน
+async function getAttendanceByDateTimeSlotAndClassroom(date, timeSlot, classroom) {
+    const [rows] = await pool.query(`
+        SELECT a.*, s.name as student_name, s.classroom
+        FROM attendance a
+        JOIN students s ON a.student_id = s.student_id
+        WHERE a.date = ? AND a.time_slot = ? AND s.classroom = ?
+        ORDER BY a.student_id
+    `, [date, timeSlot, classroom]);
+    return rows;
+}
+
+// ดึงข้อมูลการเข้าเรียนตามวันที่และช่วงเวลา
+async function getAttendanceByDateAndTimeSlot(date, timeSlot) {
+    const [rows] = await pool.query(`
+        SELECT a.*, s.name as student_name, s.classroom
+        FROM attendance a
+        JOIN students s ON a.student_id = s.student_id
+        WHERE a.date = ? AND a.time_slot = ?
+        ORDER BY s.classroom, a.student_id
+    `, [date, timeSlot]);
+    return rows;
+}
+
+// ดึงข้อมูลการเข้าเรียนตามวันที่และห้องเรียน
+async function getAttendanceByDateAndClassroom(date, classroom) {
+    const [rows] = await pool.query(`
+        SELECT a.*, s.name as student_name, s.classroom
+        FROM attendance a
+        JOIN students s ON a.student_id = s.student_id
+        WHERE a.date = ? AND s.classroom = ?
+        ORDER BY a.time_slot, a.student_id
+    `, [date, classroom]);
+    return rows;
+}
+
+// ดึงข้อมูลการเข้าเรียนตามวันที่
+async function getAttendanceByDate(date) {
+    const [rows] = await pool.query(`
+        SELECT a.*, s.name as student_name, s.classroom
+        FROM attendance a
+        JOIN students s ON a.student_id = s.student_id
+        WHERE a.date = ?
+        ORDER BY s.classroom, a.time_slot, a.student_id
+    `, [date]);
+    return rows;
+}
+
+// ลบข้อมูลการเข้าเรียนตามวันที่, ช่วงเวลา และ (ถ้ามี) ห้องเรียน
+async function clearAttendanceByDateAndTimeSlot(date, timeSlot, classroom) {
+    let query = 'DELETE a FROM attendance a JOIN students s ON a.student_id = s.student_id WHERE a.date = ? AND a.time_slot = ?';
+    const params = [date, timeSlot];
+
+    if (classroom) {
+        query += ' AND s.classroom = ?';
+        params.push(classroom);
+    }
+
+    const [result] = await pool.query(query, params);
+    return result;
+}
+
+// ลบข้อมูลการเข้าเรียนทั้งหมด
+async function clearAllAttendance() {
+    const [result] = await pool.query('DELETE FROM attendance');
+    return result;
+}
+
 module.exports = {
+    connectDatabase,
     getAllStudents,
     getStudentsByClassroom,
     getAttendanceData,
@@ -153,5 +242,14 @@ module.exports = {
     deleteTimeSlot,
     updateStudentStatus,
     checkUser,
-    getAttendanceStatistics
+    getAttendanceStatistics,
+
+    // export ฟังก์ชันใหม่
+    getClassrooms,
+    getAttendanceByDateTimeSlotAndClassroom,
+    getAttendanceByDateAndTimeSlot,
+    getAttendanceByDateAndClassroom,
+    getAttendanceByDate,
+    clearAttendanceByDateAndTimeSlot,
+    clearAllAttendance,
 };

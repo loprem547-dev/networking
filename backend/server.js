@@ -292,4 +292,12 @@ app.listen(PORT, () => {
     console.log(`🚀 เซิร์ฟเวอร์ทำงานที่พอร์ต ${PORT}`);
     console.log(`📡 API พร้อมใช้งานที่ http://localhost:${PORT}`);
     console.log(`🔗 ตรวจสถานะ: http://localhost:${PORT}/api/health`);
-}); 
+});
+const connection = require('./data');  // นำ connection มาใช้
+
+// ตัวอย่างการใช้งาน query
+connection.query('SELECT NOW() AS currentTime', (err, results) => {
+  if (err) throw err;
+  console.log('เวลาปัจจุบันจากฐานข้อมูล:', results[0].currentTime);
+});
+
