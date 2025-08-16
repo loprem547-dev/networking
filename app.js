@@ -110,7 +110,7 @@ async function handleLogin(event) {
     const password = document.getElementById('password').value;
     
     try {
-        const response = await fetch('https://web-production-9c35d.up.railway.app/api/login', {
+        const response = await fetch('https://www.attscommu.site/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -283,7 +283,7 @@ async function fetchStudentsFromMySQL() {
     const classroom = document.getElementById('classSelect').value;
     if (!classroom) return;
     try {
-        const res = await fetch(`https://web-production-9c35d.up.railway.app/api/students?classroom=${encodeURIComponent(classroom)}`);
+        const res = await fetch(`https://www.attscommu.site/api/students?classroom=${encodeURIComponent(classroom)}`);
         if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลนักเรียนจาก MySQL ได้');
         students = await res.json();
         displayStudents(students);
@@ -362,7 +362,7 @@ async function setStatus(studentId, status) {
     }
     
     try {
-        const response = await fetch(`https://web-production-9c35d.up.railway.app/api/students/${studentId}/status`, {
+        const response = await fetch(`https://www.attscommu.site/api/students/${studentId}/status`, {
 
             method: 'PUT',
             headers: {
@@ -467,7 +467,7 @@ async function saveAttendance() {
         const selectedSlot = timeSlots.find(s => s.id === timeSlot);
         const timeSlotText = selectedSlot ? selectedSlot.name : timeSlot;
         
-        await fetch(`https://web-production-9c35d.up.railway.app/api/attendance/clear`, {
+        await fetch(`https://www.attscommu.site/api/attendance/clear`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -482,7 +482,7 @@ async function saveAttendance() {
         
         // บันทึกข้อมูลใหม่ทีละคน
         for (const student of classStudents) {
-            await fetch('https://web-production-9c35d.up.railway.app/api/attendance', {
+            await fetch('https://www.attscommu.site/api/attendance', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -534,7 +534,7 @@ async function loadReport() {
     loading.classList.add('active');
     
     try {
-        let url = `https://web-production-9c35d.up.railway.app/api/attendance?date=${date}`;
+        let url = `https://www.attscommu.site/api/attendance?date=${date}`;
         if (classroom) url += `&classroom=${encodeURIComponent(classroom)}`;
         if (timeSlot) url += `&timeSlot=${encodeURIComponent(timeSlot)}`;
         
@@ -640,7 +640,7 @@ function showExportAllButton(date, classroom, timeSlot) {
 // ส่งออก Excel สำหรับ time slot เดียว
 async function exportTimeSlotToExcel(date, timeSlot) {
     try {
-        const response = await fetch(`https://web-production-9c35d.up.railway.app/api/attendance?date=${date}&timeSlot=${encodeURIComponent(timeSlot)}`);
+        const response = await fetch(`https://www.attscommu.site/api/attendance?date=${date}&timeSlot=${encodeURIComponent(timeSlot)}`);
         const records = await response.json();
         
         if (records.length === 0) {
@@ -659,7 +659,7 @@ async function exportTimeSlotToExcel(date, timeSlot) {
 // ส่งออกรายงานทั้งหมดเป็น Excel
 async function exportAllToExcel(date, classroom = '', timeSlot = '') {
     try {
-        let url = `https://web-production-9c35d.up.railway.app/api/attendance?date=${date}`;
+        let url = `https://www.attscommu.site/api/attendance?date=${date}`;
         if (classroom) url += `&classroom=${encodeURIComponent(classroom)}`;
         if (timeSlot) url += `&timeSlot=${encodeURIComponent(timeSlot)}`;
         
@@ -805,7 +805,7 @@ function formatDateThai(dateString) {
 // โหลดข้อมูลชั้นเรียนจากฐานข้อมูล
 async function loadClassrooms() {
     try {
-        const response = await fetch('https://web-production-9c35d.up.railway.app/api/classrooms');
+        const response = await fetch('https://www.attscommu.site/api/classrooms');
         const classrooms = await response.json();
         
         // อัปเดต dropdown ชั้นเรียนในหน้ารายงาน
@@ -833,7 +833,7 @@ async function loadClassrooms() {
 // โหลดข้อมูลคาบเรียนจากฐานข้อมูล
 async function loadTimeSlotsFromDB() {
     try {
-        const response = await fetch('https://web-production-9c35d.up.railway.app/api/time-slots');
+        const response = await fetch('https://www.attscommu.site/api/time-slots');
         const timeSlots = await response.json();
         
         // อัปเดต dropdown คาบเรียนในหน้ารายงาน
@@ -867,7 +867,7 @@ async function clearAllAttendanceHistory() {
     }
     
     try {
-        const response = await fetch('https://web-production-9c35d.up.railway.app/api/attendance/clear-all', {
+        const response = await fetch('https://www.attscommu.site/api/attendance/clear-all', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -939,7 +939,7 @@ async function loadStudentStatistics() {
     loading.classList.add('active');
     
     try {
-        const response = await fetch(`https://web-production-9c35d.up.railway.app/api/attendance/statistics?classroom=${classroom}&startDate=${startDate}&endDate=${endDate}`);
+        const response = await fetch(`https://www.attscommu.site/api/attendance/statistics?classroom=${classroom}&startDate=${startDate}&endDate=${endDate}`);
         const statistics = await response.json();
         
         if (statistics.length === 0) {
@@ -984,7 +984,7 @@ async function clearAllStudents() {
     if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนักเรียนทั้งหมด?')) return;
     
     try {
-        const response = await fetch('https://web-production-9c35d.up.railway.app/api/students', {
+        const response = await fetch('https://www.attscommu.site/api/students', {
             method: 'DELETE'
         });
         
