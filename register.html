@@ -13,28 +13,68 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease-in-out;
+            z-index: -2;
+        }
+        
+        .background-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease-in-out;
+            z-index: -1;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
         }
         
         .register-box {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 500px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .register-box h1 {
-            color: #333;
+            color: #2c3e50;
             margin-bottom: 10px;
             font-size: 28px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .register-box h2 {
-            color: #666;
+            color: #34495e;
             margin-bottom: 30px;
             font-size: 18px;
             font-weight: 400;
@@ -48,23 +88,28 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: #2c3e50;
             font-weight: 600;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
         }
         
         .form-group input {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e1e5e9;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
             box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
         }
         
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         .register-btn {
@@ -77,85 +122,165 @@
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
             margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
         }
         
         .register-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .register-btn:active {
+            transform: translateY(0);
         }
         
         .register-btn:disabled {
-            background: #ccc;
+            background: #bdc3c7;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         
         .register-error {
-            color: #dc3545;
+            color: #c0392b;
             margin-top: 15px;
-            padding: 10px;
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 5px;
+            padding: 12px;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
             display: none;
         }
         
         .register-success {
-            color: #155724;
+            color: #27ae60;
             margin-top: 15px;
-            padding: 10px;
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
+            padding: 12px;
+            background: rgba(39, 174, 96, 0.1);
+            border: 1px solid rgba(39, 174, 96, 0.3);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
             display: none;
         }
         
         .login-link {
             margin-top: 25px;
-            color: #666;
+            text-align: center;
         }
         
         .login-link a {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
         
         .login-link a:hover {
-            text-decoration: underline;
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         
         .password-requirements {
             font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            color: #34495e;
+            margin-top: 8px;
             text-align: left;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 6px;
+            backdrop-filter: blur(5px);
         }
         
         .requirement {
-            margin: 2px 0;
+            margin: 3px 0;
+            padding: 2px 0;
         }
         
         .requirement.valid {
-            color: #28a745;
+            color: #27ae60;
+            font-weight: 600;
         }
         
         .requirement.invalid {
-            color: #dc3545;
+            color: #e74c3c;
         }
         
         .logo-container {
             margin-bottom: 30px;
+            text-align: center;
         }
         
         .logo-container img {
             width: 120px;
             height: auto;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-container img:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 10px;
+            }
+            
+            .register-box {
+                padding: 30px 20px;
+                max-width: 100%;
+            }
+            
+            .register-box h1 {
+                font-size: 24px;
+            }
+            
+            .register-box h2 {
+                font-size: 16px;
+            }
+            
+            .form-group input {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+            
+            .register-btn {
+                padding: 12px;
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .register-box {
+                padding: 20px 15px;
+            }
+            
+            .register-box h1 {
+                font-size: 20px;
+            }
+            
+            .form-group input {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="slideshow"></div>
+    <div class="background-slideshow"></div>
+    <div class="overlay"></div>
     <div class="register-container">
         <div class="register-box">
             <div class="logo-container">
@@ -365,6 +490,58 @@
             successDiv.style.display = 'block';
             document.getElementById('registerError').style.display = 'none';
         }
+        
+        // ระบบพื้นหลังเดียวกันกับ index.html
+        const images = [
+            './backend/backgrounds/backgrounds (1).jpg',
+            './backend/backgrounds/backgrounds (2).jpg',
+            './backend/backgrounds/backgrounds (3).jpg',
+            './backend/backgrounds/backgrounds (4).jpg',
+            './backend/backgrounds/backgrounds (5).jpg',
+            './backend/backgrounds/backgrounds (6).jpg',
+            './backend/backgrounds/backgrounds (7).jpg',
+            './backend/backgrounds/backgrounds (8).jpg',
+        ];
+        
+        let current = 0;
+        const bgDiv = document.querySelector('.background-slideshow');
+        
+        function showImage(idx) {
+            bgDiv.style.backgroundImage = `url('${images[idx]}')`;
+            bgDiv.style.backgroundColor = '#e0e0e0'; // fallback color
+        }
+        
+        function nextImage() {
+            current = (current + 1) % images.length;
+            showImage(current);
+        }
+        
+        // เริ่มต้นระบบพื้นหลัง
+        showImage(current);
+        setInterval(nextImage, 4000);
+        
+        // โหลดภาพพื้นหลังจาก localStorage (ถ้ามี)
+        function loadBackgroundImages() {
+            const savedImages = localStorage.getItem('backgroundImages');
+            if (savedImages) {
+                try {
+                    const customImages = JSON.parse(savedImages);
+                    if (customImages && customImages.length > 0) {
+                        // ใช้ภาพพื้นหลังที่กำหนดเอง
+                        images.length = 0;
+                        images.push(...customImages);
+                        showImage(0);
+                    }
+                } catch (e) {
+                    console.log('ไม่สามารถโหลดภาพพื้นหลังที่กำหนดเองได้');
+                }
+            }
+        }
+        
+        // โหลดภาพพื้นหลังเมื่อหน้าโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBackgroundImages();
+        });
     </script>
 </body>
 </html> 
