@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สมัครสมาชิก - ระบบเช็คชื่อนักเรียน</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .register-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .register-box h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .register-box h2 {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 400;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .register-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-top: 10px;
+        }
+        
+        .register-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .register-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .register-error {
+            color: #dc3545;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .register-success {
+            color: #155724;
+            margin-top: 15px;
+            padding: 10px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .login-link {
+            margin-top: 25px;
+            color: #666;
+        }
+        
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: left;
+        }
+        
+        .requirement {
+            margin: 2px 0;
+        }
+        
+        .requirement.valid {
+            color: #28a745;
+        }
+        
+        .requirement.invalid {
+            color: #dc3545;
+        }
+        
+        .logo-container {
+            margin-bottom: 30px;
+        }
+        
+        .logo-container img {
+            width: 120px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-box">
+            <div class="logo-container">
+                <img src="logo.png" alt="โลโก้">
+            </div>
+            <h1>ระบบเช็คชื่อนักเรียน</h1>
+            <h2>สมัครสมาชิกใหม่</h2>
+            
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้งาน:</label>
+                    <input type="text" id="username" required placeholder="กรอกชื่อผู้ใช้งาน" oninput="validateUsername()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="displayName">ชื่อที่แสดง:</label>
+                    <input type="text" id="displayName" required placeholder="กรอกชื่อที่แสดง (จะแสดงในช่องชื่อครูผู้เช็คชื่อ)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">อีเมล์:</label>
+                    <input type="email" id="email" required placeholder="กรอกอีเมล์">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tel">เบอร์ติดต่อ:</label>
+                    <input type="tel" id="tel" required placeholder="กรอกเบอร์ติดต่อ" pattern="[0-9]{10}" title="กรุณากรอกเบอร์โทรศัพท์ 10 หลัก">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">รหัสผ่าน:</label>
+                    <input type="password" id="password" required placeholder="กรอกรหัสผ่าน" oninput="validatePassword()">
+                    <div class="password-requirements">
+                        <div class="requirement" id="reqLength">• รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร</div>
+                        <div class="requirement" id="reqUppercase">• ต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว</div>
+                        <div class="requirement" id="reqLowercase">• ต้องมีตัวพิมพ์เล็กอย่างน้อย 1 ตัว</div>
+                        <div class="requirement" id="reqNumber">• ต้องมีตัวเลขอย่างน้อย 1 ตัว</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">ยืนยันรหัสผ่าน:</label>
+                    <input type="password" id="confirmPassword" required placeholder="กรอกรหัสผ่านอีกครั้ง" oninput="validateConfirmPassword()">
+                </div>
+                
+                <button type="submit" class="register-btn" id="registerBtn" disabled>
+                    📝 สมัครสมาชิก
+                </button>
+                
+                <div class="register-error" id="registerError"></div>
+                <div class="register-success" id="registerSuccess"></div>
+            </form>
+            
+            <div class="login-link">
+                <p>มีบัญชีอยู่แล้ว? <a href="index.html">เข้าสู่ระบบ</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isFormValid = false;
+        
+        function validateUsername() {
+            const username = document.getElementById('username').value;
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            
+            if (usernameRegex.test(username)) {
+                document.getElementById('username').style.borderColor = '#28a745';
+            } else {
+                document.getElementById('username').style.borderColor = '#dc3545';
+            }
+            
+            checkFormValidity();
+        }
+        
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            
+            // ตรวจสอบความยาว
+            const reqLength = document.getElementById('reqLength');
+            if (password.length >= 8) {
+                reqLength.className = 'requirement valid';
+            } else {
+                reqLength.className = 'requirement invalid';
+            }
+            
+            // ตรวจสอบตัวพิมพ์ใหญ่
+            const reqUppercase = document.getElementById('reqUppercase');
+            if (/[A-Z]/.test(password)) {
+                reqUppercase.className = 'requirement valid';
+            } else {
+                reqUppercase.className = 'requirement invalid';
+            }
+            
+            // ตรวจสอบตัวพิมพ์เล็ก
+            const reqLowercase = document.getElementById('reqLowercase');
+            if (/[a-z]/.test(password)) {
+                reqLowercase.className = 'requirement valid';
+            } else {
+                reqLowercase.className = 'requirement invalid';
+            }
+            
+            // ตรวจสอบตัวเลข
+            const reqNumber = document.getElementById('reqNumber');
+            if (/[0-9]/.test(password)) {
+                reqNumber.className = 'requirement valid';
+            } else {
+                reqNumber.className = 'requirement invalid';
+            }
+            
+            validateConfirmPassword();
+            checkFormValidity();
+        }
+        
+        function validateConfirmPassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (confirmPassword === password && confirmPassword !== '') {
+                document.getElementById('confirmPassword').style.borderColor = '#28a745';
+            } else {
+                document.getElementById('confirmPassword').style.borderColor = '#dc3545';
+            }
+            
+            checkFormValidity();
+        }
+        
+        function checkFormValidity() {
+            const username = document.getElementById('username').value;
+            const displayName = document.getElementById('displayName').value;
+            const email = document.getElementById('email').value;
+            const tel = document.getElementById('tel').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const telRegex = /^[0-9]{10}$/;
+            
+            isFormValid = usernameRegex.test(username) &&
+                         displayName.trim() !== '' &&
+                         emailRegex.test(email) &&
+                         telRegex.test(tel) &&
+                         passwordRegex.test(password) &&
+                         confirmPassword === password;
+            
+            document.getElementById('registerBtn').disabled = !isFormValid;
+        }
+        
+        // เพิ่ม event listeners สำหรับการตรวจสอบแบบ real-time
+        document.getElementById('displayName').addEventListener('input', checkFormValidity);
+        document.getElementById('email').addEventListener('input', checkFormValidity);
+        document.getElementById('tel').addEventListener('input', checkFormValidity);
+        
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            if (!isFormValid) {
+                showError('กรุณาตรวจสอบข้อมูลให้ถูกต้อง');
+                return;
+            }
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                displayName: document.getElementById('displayName').value,
+                email: document.getElementById('email').value,
+                tel: document.getElementById('tel').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('สมัครสมาชิกสำเร็จ! กำลังนำไปยังหน้าเข้าสู่ระบบ...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    showError(result.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก');
+                }
+            } catch (error) {
+                showError('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+                console.error('Error:', error);
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('registerError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('registerSuccess').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('registerSuccess');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('registerError').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 

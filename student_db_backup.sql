@@ -144,9 +144,12 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `role` enum('admin','teacher','commu') NOT NULL DEFAULT 'teacher',
   `display_name` varchar(100) DEFAULT NULL,
+  `email` varchar(255) NOT NULL DEFAULT '',
+  `tel` varchar(20) NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`)
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -156,7 +159,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin','admin123','admin','ผู้ดูแลระบบ','2025-07-19 10:02:40'),(2,'teacher1','teach123','teacher','อ.สมศรี','2025-07-19 10:02:40'),(3,'teacher2','teach456','teacher','อ.สมชาย','2025-07-19 10:02:40'),(4,'commu','attscommu','commu','แผนกวิชาสื่อสาร','2025-07-19 10:02:40');
+INSERT INTO `users` VALUES (1,'admin','admin123','admin','ผู้ดูแลระบบ','admin@rtaf.mi.th','0812345678','2025-07-19 10:02:40'),(2,'teacher1','teach123','teacher','อ.สมศรี','teacher1@rtaf.mi.th','0823456789','2025-07-19 10:02:40'),(3,'teacher2','teach456','teacher','อ.สมชาย','teacher2@rtaf.mi.th','0834567890','2025-07-19 10:02:40'),(4,'commu','attscommu','commu','แผนกวิชาสื่อสาร','commu@rtaf.mi.th','0845678901','2025-07-19 10:02:40');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

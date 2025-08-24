@@ -250,6 +250,96 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// 10. สมัครสมาชิกใหม่
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, displayName, email, tel, password } = req.body;
+        
+        // ตรวจสอบข้อมูลที่จำเป็น
+        if (!username || !displayName || !email || !tel || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'กรุณากรอกข้อมูลให้ครบถ้วน' 
+            });
+        }
+        
+        // ตรวจสอบรูปแบบข้อมูล
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const telRegex = /^[0-9]{10}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        
+        if (!usernameRegex.test(username)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'ชื่อผู้ใช้งานต้องมี 3-20 ตัวอักษร และใช้เฉพาะตัวอักษร ตัวเลข และ _ เท่านั้น' 
+            });
+        }
+        
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'รูปแบบอีเมล์ไม่ถูกต้อง' 
+            });
+        }
+        
+        if (!telRegex.test(tel)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก' 
+            });
+        }
+        
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และมีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลขอย่างน้อยอย่างละ 1 ตัว' 
+            });
+        }
+        
+        // ตรวจสอบว่าชื่อผู้ใช้งานซ้ำหรือไม่
+        const existingUser = await db.checkUsernameExists(username);
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'ชื่อผู้ใช้งานนี้มีอยู่ในระบบแล้ว' 
+            });
+        }
+        
+        // ตรวจสอบว่าอีเมล์ซ้ำหรือไม่
+        const existingEmail = await db.checkEmailExists(email);
+        if (existingEmail) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'อีเมล์นี้มีอยู่ในระบบแล้ว' 
+            });
+        }
+        
+        // สร้างผู้ใช้ใหม่
+        const result = await db.createUser(username, displayName, email, tel, password);
+        
+        if (result.success) {
+            res.json({ 
+                success: true, 
+                message: 'สมัครสมาชิกสำเร็จ!',
+                userId: result.userId 
+            });
+        } else {
+            res.status(500).json({ 
+                success: false, 
+                message: result.message || 'เกิดข้อผิดพลาดในการสร้างบัญชีผู้ใช้' 
+            });
+        }
+        
+    } catch (err) {
+        console.error('เกิดข้อผิดพลาดในการสมัครสมาชิก:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'เกิดข้อผิดพลาดในการสมัครสมาชิก' 
+        });
+    }
+});
+
 // เสิร์ฟไฟล์ static จาก root (เช่น styles.css, app.js, logo.png)
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -286,8 +376,10 @@ app.get('/api/backgrounds', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 เซิร์ฟเวอร์ทำงานที่พอร์ต ${PORT}`);
     console.log(`📡 API พร้อมใช้งานที่ http://localhost:${PORT}`);
     console.log(`🔗 ตรวจสถานะ: http://localhost:${PORT}/api/health`);
+    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📊 Database: ${process.env.DB_HOST ? 'Configured' : 'Not configured'}`);
 });

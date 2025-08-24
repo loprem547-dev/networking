@@ -59,4 +59,11 @@ jspm_packages/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Database files
+*.sql
+*.db
+
+# Backup files
+*_backup.sql 

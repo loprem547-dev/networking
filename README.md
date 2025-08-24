@@ -1,44 +1,108 @@
-# ระบบเช็คชื่อนักเรียน (Student Attendance System)
+# Networking - Student Attendance System
 
-ระบบเช็คชื่อนักเรียนที่พัฒนาด้วย Node.js, Express และ MySQL
+ระบบจัดการการเข้าเรียนของนักเรียนที่พัฒนาด้วย Node.js, Express และ MySQL
 
-## การ Deploy บน Railway
+## 🌐 Live Demo
+- **Website**: [www.attscommu.site](https://www.attscommu.site)
+- **Backend API**: [https://networking-production.up.railway.app](https://networking-production.up.railway.app)
 
-### ขั้นตอนที่ 1: เตรียม Repository
-1. สร้าง repository บน GitHub
-2. Push โค้ดขึ้น GitHub
+## 🚀 Features
+- ระบบจัดการข้อมูลนักเรียน
+- ระบบบันทึกการเข้าเรียน
+- ระบบจัดการชั้นเรียน
+- API สำหรับ Frontend และ Mobile App
+- ระบบฐานข้อมูล MySQL
 
-### ขั้นตอนที่ 2: Deploy บน Railway
-1. ไปที่ [Railway.app](https://railway.app)
-2. สมัครสมาชิกด้วย GitHub
-3. กด "New Project" > "Deploy from GitHub repo"
-4. เลือก repository ของคุณ
-5. Railway จะ deploy อัตโนมัติ
+## 🛠️ Tech Stack
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL
+- **Authentication**: bcrypt
+- **CORS**: Enabled for cross-origin requests
+- **Deployment**: Railway
 
-### ขั้นตอนที่ 3: ตั้งค่าฐานข้อมูล
-1. ใน Railway dashboard กด "New" > "Database" > "MySQL"
-2. ตั้งค่า Environment Variables:
-   - `DB_HOST`: host ของ MySQL (จาก Railway)
-   - `DB_USER`: username ของ MySQL
-   - `DB_PASSWORD`: password ของ MySQL
-   - `DB_NAME`: ชื่อฐานข้อมูล
-   - `DB_PORT`: 3306
-   - `FRONTEND_URL`: URL ของ frontend (ถ้ามี)
+## 📁 Project Structure
+```
+attscommu/
+├── backend/
+│   ├── server.js          # Main server file
+│   ├── database.js        # Database connection & queries
+│   └── backgrounds/       # Background images
+├── index.html             # Main frontend
+├── register.html          # Registration page
+├── styles.css             # CSS styles
+├── app.js                 # Frontend JavaScript
+└── package.json           # Dependencies
+```
 
-### ขั้นตอนที่ 4: Import ฐานข้อมูล
-1. ใช้ไฟล์ `database_setup.sql` หรือ `student_db_setup.sql`
-2. Import เข้าฐานข้อมูล MySQL บน Railway
+## 🚀 Quick Start
 
-## การใช้งาน
-- API จะทำงานที่ URL ที่ Railway ให้
-- ตรวจสอบสถานะ: `{URL}/api/health`
-- Frontend: `{URL}/`
+### Prerequisites
+- Node.js (v14 or higher)
+- MySQL Database
+- npm or yarn
 
-## Environment Variables
-- `PORT`: พอร์ตที่เซิร์ฟเวอร์จะทำงาน (Railway จะตั้งให้อัตโนมัติ)
-- `DB_HOST`: MySQL host
-- `DB_USER`: MySQL username
-- `DB_PASSWORD`: MySQL password
-- `DB_NAME`: MySQL database name
-- `DB_PORT`: MySQL port (ปกติ 3306)
-- `FRONTEND_URL`: URL ของ frontend (ถ้ามี) 
+### Installation
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/networking.git
+cd networking
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Set up environment variables
+```bash
+cp .env.example .env
+# Edit .env with your database credentials
+```
+
+4. Set up database
+```bash
+mysql -u root -p < database_setup.sql
+```
+
+5. Start the server
+```bash
+npm start
+```
+
+## 🌐 API Endpoints
+
+### Students
+- `GET /api/students` - Get all students
+- `GET /api/students?classroom=1` - Get students by classroom
+- `PUT /api/students/:id/status` - Update student status
+
+### Classrooms
+- `GET /api/classrooms` - Get all classrooms
+
+### Attendance
+- `GET /api/attendance` - Get attendance data
+- `GET /api/attendance?date=2024-01-01` - Get attendance by date
+
+## 🚀 Deployment
+
+### Railway
+This project is configured for Railway deployment with:
+- Automatic builds from GitHub
+- Environment variable management
+- Custom domain support
+
+### Environment Variables for Railway
+- `DB_HOST` - Database host
+- `DB_USER` - Database username
+- `DB_PASSWORD` - Database password
+- `DB_NAME` - Database name
+- `PORT` - Server port (Railway sets this automatically)
+
+## 📝 License
+MIT License
+
+## 👥 Contributors
+- Your Name - Initial work
+
+## 🤝 Support
+For support, email support@attscommu.site or create an issue on GitHub. 

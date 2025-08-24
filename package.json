@@ -1,12 +1,15 @@
 {
-  "name": "attendance-system-backend",
+  "name": "networking",
   "version": "1.0.0",
-  "description": "Backend API for Student Attendance System",
-  "main": "server.js",
+  "description": "Networking - Student Attendance System",
+  "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "build": "echo 'No build step required'"
+    "build": "echo 'No build step required'",
+    "test": "echo 'No tests specified'",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -14,7 +17,8 @@
     "dotenv": "^17.2.1",
     "express": "^4.21.2",
     "mysql": "^2.18.1",
-    "mysql2": "^3.14.2"
+    "mysql2": "^3.14.2",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

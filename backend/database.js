@@ -228,6 +228,46 @@ async function clearAllAttendance() {
     return result;
 }
 
+// ฟังก์ชันสำหรับการสมัครสมาชิก
+
+// ตรวจสอบว่าชื่อผู้ใช้งานซ้ำหรือไม่
+async function checkUsernameExists(username) {
+    const [rows] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
+    return rows.length > 0;
+}
+
+// ตรวจสอบว่าอีเมล์ซ้ำหรือไม่
+async function checkEmailExists(email) {
+    const [rows] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    return rows.length > 0;
+}
+
+// สร้างผู้ใช้ใหม่
+async function createUser(username, displayName, email, tel, password) {
+    try {
+        // เข้ารหัสรหัสผ่าน
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // เพิ่มผู้ใช้ใหม่
+        const [result] = await pool.query(
+            'INSERT INTO users (username, password, role, display_name, email, tel) VALUES (?, ?, ?, ?, ?, ?)',
+            [username, hashedPassword, 'teacher', displayName, email, tel]
+        );
+        
+        return {
+            success: true,
+            userId: result.insertId,
+            message: 'สร้างบัญชีผู้ใช้สำเร็จ'
+        };
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการสร้างผู้ใช้:', error);
+        return {
+            success: false,
+            message: 'เกิดข้อผิดพลาดในการสร้างบัญชีผู้ใช้'
+        };
+    }
+}
+
 module.exports = {
     connectDatabase,
     getAllStudents,
@@ -252,4 +292,9 @@ module.exports = {
     getAttendanceByDate,
     clearAttendanceByDateAndTimeSlot,
     clearAllAttendance,
+    
+    // ฟังก์ชันสำหรับการสมัครสมาชิก
+    checkUsernameExists,
+    checkEmailExists,
+    createUser,
 };

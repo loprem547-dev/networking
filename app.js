@@ -6,6 +6,25 @@ const users = [
     { username: 'commu', password: 'attscommu', role: 'commu', displayName: 'แผนกวิชาสื่อสาร' }
 ];
 
+// ฟังก์ชันสำหรับการสมัครสมาชิก
+async function registerUser(userData) {
+    try {
+        const response = await fetch('http://localhost:3001/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Registration error:', error);
+        throw new Error('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+    }
+}
+
 // Current user
 let currentUser = null;
 
@@ -110,7 +129,7 @@ async function handleLogin(event) {
     const password = document.getElementById('password').value;
     
     try {
-        const response = await fetch('https://www.attscommu.site/api/login', {
+        const response = await fetch('http://localhost:3001/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
