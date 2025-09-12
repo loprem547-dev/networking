@@ -481,6 +481,14 @@ async function saveAttendance() {
 
     const classStudents = students.filter(s => s.classroom === classroom);
     
+    // ตรวจสอบว่ามีการเปลี่ยนแปลงสถานะหรือไม่
+    const hasChanges = classStudents.some(student => student.status && student.status !== 'present');
+    
+    if (!hasChanges) {
+        showAlert('ไม่มีการเปลี่ยนแปลงสถานะนักเรียน กรุณาเช็คชื่อก่อนบันทึก', 'warning');
+        return;
+    }
+    
     try {
         // ลบข้อมูลการเช็คชื่อเก่าในวันและช่วงเวลานี้
         const selectedSlot = timeSlots.find(s => s.id === timeSlot);
@@ -510,12 +518,42 @@ async function saveAttendance() {
                     studentId: student.student_id,
                     date,
                     timeSlot: timeSlotText,
-                    status: student.status || 'present'
+                    status: student.status || 'present',
+                    teacher: teacher,
+                    classroom: classroom
                 })
             });
         }
         
-        showAlert('บันทึกการเช็กชื่อสำเร็จ (ลบข้อมูลเก่าแล้ว)', 'success');
+        showAlert('บันทึกการเช็กชื่อสำเร็จ! ข้อมูลถูกบันทึกลงฐานข้อมูลแล้ว', 'success');
+        
+        // บันทึกข้อมูลลง localStorage เพื่อใช้ในหน้าใบจำหน่ายยอด
+        const attendanceData = {
+            date: date,
+            timeSlot: timeSlotText,
+            classroom: classroom,
+            teacher: teacher,
+            students: classStudents.map(student => ({
+                studentId: student.student_id,
+                name: student.name,
+                status: student.status || 'present'
+            })),
+            timestamp: new Date().toISOString()
+        };
+        
+        // บันทึกลง localStorage
+        const savedData = JSON.parse(localStorage.getItem('attendanceData') || '[]');
+        const existingIndex = savedData.findIndex(item => 
+            item.date === date && item.timeSlot === timeSlotText && item.classroom === classroom
+        );
+        
+        if (existingIndex >= 0) {
+            savedData[existingIndex] = attendanceData;
+        } else {
+            savedData.push(attendanceData);
+        }
+        
+        localStorage.setItem('attendanceData', JSON.stringify(savedData));
         
         // รีเซ็ตสถานะนักเรียน
         classStudents.forEach(student => {
@@ -1087,8 +1125,8 @@ function addTimeSlot() {
 function editTimeSlot(slotId) {
     if (!currentUser || currentUser.role !== 'admin') {
         showAlert('คุณไม่มีสิทธิ์ในการแก้ไขช่วงเวลา (สำหรับผู้ดูแลระบบเท่านั้น)', 'error');
-            return;
-        }
+        return;
+    }
 
     const slot = timeSlots.find(s => s.id === slotId);
     if (!slot) return;
@@ -1521,4 +1559,156 @@ function updateUserProfilePicSmall() {
         img.style.display = 'none';
     }
 }
-// เรียกใช้หลัง login, saveUserSettings, และตอนโหลดหน้า
+
+// ฟังก์ชันสำหรับพิมพ์ใบยอด (เวอร์ชันปรับปรุง)
+function printSummaryForm() {
+    // 1. ดึงข้อมูลที่จำเป็นจากหน้าเว็บ
+    const classroom = document.getElementById('classSelect').value;
+    const teacher = document.getElementById('teacherName').value;
+    const yearLevel = document.getElementById('yearLevel').value;
+    const timeSlotId = document.getElementById('timeSlot').value;
+    if (!classroom || !teacher || !yearLevel || !timeSlotId) {
+        showAlert('กรุณาเลือกข้อมูลให้ครบถ้วนก่อนพิมพ์ใบยอด', 'error');
+        return;
+    }
+    // 2. เตรียมข้อมูลวันที่และข้อมูลนักเรียน
+    const now = new Date();
+    const day = now.getDate();
+    const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    const month = monthNames[now.getMonth()];
+    const year_be = now.getFullYear() + 543;
+    const dayOfWeekNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+    const day_of_week = dayOfWeekNames[now.getDay()];
+    // ชั้นปี
+    const yearText = yearLevel === '1' ? '1' : yearLevel === '2' ? '2' : '-';
+    // ตอนเรียน
+    let sectionText = '-';
+    let njName = '-';
+    if (classroom === 'y2-com-sec-1') { sectionText = '1'; njName = 'นจอ. วิชยุตม์ ทองเปลว'; }
+    else if (classroom === 'y2-com-sec-2') { sectionText = '2'; njName = 'นจอ. นวมินทร์ หัสดวง'; }
+    else if (classroom === 'y2-com-sec-3') { sectionText = '3'; njName = 'นจอ. เมธาสิทธิ์ แววสูงเนิน'; }
+    else if (classroom === 'y2-com-comp') { sectionText = 'คอมพิวเตอร์'; njName = 'นจอ. อดุลวัส รุ่งสบแสง'; }
+    // กรองนักเรียนตาม classroom ที่เลือก
+    const classStudents = students.filter(s => s.classroom === classroom);
+    const totalStudents = classStudents.length;
+    // แยกนักเรียนที่จำหน่าย (ไม่มาเรียน) และนับจำนวน
+    const absentStudents = classStudents.filter(s => (s.status || 'present') !== 'present');
+    const presentCount = totalStudents - absentStudents.length;
+    // สร้างรายการชื่อนักเรียนที่จำหน่ายพร้อมขึ้นบรรทัดใหม่
+    const absentListText = absentStudents.map(s => `${s.name}`).join('<br>') || '-';
+    // นับจำนวนนักเรียนตามสถานะการจำหน่ายแต่ละประเภท
+    const absentCounts = { home: 0, activity: 0, sick: 0, leave: 0, absent: 0, trip: 0 };
+    absentStudents.forEach(student => {
+        if (absentCounts.hasOwnProperty(student.status)) {
+            absentCounts[student.status]++;
+        }
+    });
+    // 3. สร้าง HTML สำหรับใบยอด
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>ใบยอดการเข้าเรียน</title>
+        <style>
+            body { font-family: 'TH SarabunPSK', Arial, sans-serif; font-size: 16px; }
+            .report-container { max-width: 800px; margin: auto; padding: 20px; }
+            .header-text { text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 16px; }
+            .date-info { text-align: right; margin-bottom: 16px; }
+            .attendance-table { width: 100%; border: 1px solid #000; border-collapse: collapse; text-align: center; }
+            .attendance-table th, .attendance-table td { border: 1px solid #000; padding: 6px; height: 30px; }
+            .absent-list-cell { text-align: left; vertical-align: top; height: 120px; line-height: 1.4; }
+            .signature-section { margin-top: 48px; display: flex; justify-content: space-between; }
+            .signature-box { width: 300px; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class="report-container">
+            <div class="header-text">
+                ยอดนักเรียนจ่าอากาศ เหล่าทหารสื่อสาร ชั้นปีที่ ${yearText} ตอน ${sectionText}
+            </div>
+            <div class="date-info">
+                ประจำวัน ${day_of_week} ที่ ${day} เดือน ${month} พ.ศ. ${year_be}
+            </div>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">เวลา</th>
+                        <th rowspan="2">ยอดเต็ม</th>
+                        <th colspan="6">รายการจำหน่าย</th>
+                        <th rowspan="2">นจอ. จำหน่าย</th>
+                        <th rowspan="2">จำนวน นจอ. ที่เข้าเรียน</th>
+                        <th rowspan="2">หมายเหตุ</th>
+                    </tr>
+                    <tr>
+                        <th>อ</th>
+                        <th>ร</th>
+                        <th>ป</th>
+                        <th>ล</th>
+                        <th>ข</th>
+                        <th>น</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    // เฉพาะแถวช่วงเวลาที่เลือก
+    if (timeSlotId === 'morning') {
+        html += `
+            <tr>
+                <td>๐๘๐๐ - ๑๒๐๐</td>
+                <td>${totalStudents}</td>
+                <td>${absentCounts.home > 0 ? absentCounts.home : ''}</td>
+                <td>${absentCounts.activity > 0 ? absentCounts.activity : ''}</td>
+                <td>${absentCounts.sick > 0 ? absentCounts.sick : ''}</td>
+                <td>${absentCounts.leave > 0 ? absentCounts.leave : ''}</td>
+                <td>${absentCounts.absent > 0 ? absentCounts.absent : ''}</td>
+                <td>${absentCounts.trip > 0 ? absentCounts.trip : ''}</td>
+                <td class="absent-list-cell">${absentListText}</td>
+                <td>${presentCount}</td>
+                <td></td>
+            </tr>
+        `;
+    } else if (timeSlotId === 'afternoon') {
+        html += `
+            <tr>
+                <td>๑๓๐๐ - ๑๖๐๐</td>
+                <td>${totalStudents}</td>
+                <td>${absentCounts.home > 0 ? absentCounts.home : ''}</td>
+                <td>${absentCounts.activity > 0 ? absentCounts.activity : ''}</td>
+                <td>${absentCounts.sick > 0 ? absentCounts.sick : ''}</td>
+                <td>${absentCounts.leave > 0 ? absentCounts.leave : ''}</td>
+                <td>${absentCounts.absent > 0 ? absentCounts.absent : ''}</td>
+                <td>${absentCounts.trip > 0 ? absentCounts.trip : ''}</td>
+                <td class="absent-list-cell">${absentListText}</td>
+                <td>${presentCount}</td>
+                <td></td>
+            </tr>
+        `;
+    }
+    html += `
+                </tbody>
+            </table>
+            <div class="signature-section">
+                <div class="signature-box">
+                    (ลงชื่อ).........${teacher}............<br>
+                    (${teacher})<br>
+                    ผู้รับผิดชอบห้องเรียน
+                </div>
+                <div class="signature-box">
+                    (ลงชื่อ)..........${njName}..............<br>
+                    (${njName})<br>
+                    หน.ตอน/ผช.หน.ตอน 
+                </div>
+            </div>
+        </div>
+        <script>
+             window.print();
+        </script>
+    </body>
+    </html>
+    `;
+    // 4. เปิดหน้าต่างใหม่เพื่อพิมพ์ (เหมือนเดิม)
+    const printWin = window.open('', '_blank');
+    printWin.document.write(html);
+    printWin.document.close();
+}
